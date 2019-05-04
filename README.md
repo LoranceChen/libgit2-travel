@@ -2,7 +2,6 @@
 test libgit2 library.
 
 ## Features
-- create a commit in buffer
+- create first commit to bare repo
+- create a commit to exist HEAD commit
 - ...
-
-

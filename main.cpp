@@ -9,12 +9,12 @@ void error_check(int error) {
     }
 }
 
-git_repository* open_bare_repo() {
+git_repository* open_bare_repo(const char path[]) {
     //init repo
     git_repository *repo = NULL;
     //open bare
 //    int error = git_repository_open_bare(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
-    int error = git_repository_open_bare(&repo, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo");
+    int error = git_repository_open_bare(&repo, path);
 
     error_check(error);
 
@@ -22,12 +22,12 @@ git_repository* open_bare_repo() {
 
 }
 
-git_repository* open_repo() {
+git_repository* open_repo(const char path[]) {
     //init repo
     git_repository *repo = NULL;
     //open bare
 //    int error = git_repository_open(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
-    int error = git_repository_open(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
+    int error = git_repository_open(&repo, path);
 
     error_check(error);
 
@@ -79,11 +79,11 @@ void lookup(git_repository* repo, git_oid *oid,
     return;
 }
 
-void create_blob(git_repository *repo, git_oid *blob_oid) {
+void create_blob(git_repository *repo, git_oid *blob_oid, const char str[]) {
 //    int error = git_blob_create_fromworkdir(&oid, repo, "README.md");
 //    error = git_blob_create_fromdisk(&oid, repo, "/etc/hosts");
 
-    const char str[] = "# Hello there!";
+//    const char str[] = "# Hello there!";
     int error = git_blob_create_frombuffer(blob_oid, repo, str, strlen(str));
     error_check(error);
 
@@ -92,7 +92,13 @@ void create_blob(git_repository *repo, git_oid *blob_oid) {
 
 void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git_oid *blob_oid, const git_tree *source_tree) {
     git_treebuilder *bld = NULL;
-    int error = git_treebuilder_new(&bld, repo, source_tree);
+
+    int error;
+    if(source_tree != NULL) {
+        error = git_treebuilder_new(&bld, repo, source_tree);
+    } else {
+        error = git_treebuilder_new(&bld, repo, NULL);
+    }
     error_check(error);
 
 /* Add some entries */
@@ -122,6 +128,31 @@ void lookup_commit_tree(git_commit* commit, git_tree *tree) {
     error_check(error);
     return;
 }
+
+void create_init_commit(git_repository *repo,
+                        git_oid *out_new_commit_id,
+                        const git_tree *tree) {
+
+    // commit repo
+    git_signature *me = NULL;
+    int error = git_signature_now(&me, "Me", "me@example.com");
+    error_check(error);
+
+    error = git_commit_create_v(
+            out_new_commit_id,
+            repo,
+            "HEAD",                      /* name of ref to update */
+            me,                          /* author */
+            me,                          /* committer */
+            "UTF-8",                     /* message encoding */
+            "init commit",  /* message */
+            tree,                        /* root tree */
+            0,                           /* parent count */
+            NULL);                    /* parents */
+    error_check(error);
+
+    return;
+}
 void create_commit(git_repository *repo,
                    git_oid *out_new_commit_id,
                     const git_commit *parent,
@@ -147,12 +178,13 @@ void create_commit(git_repository *repo,
     return;
 }
 
-int main() {
+// append commit to HEAD
+int main_append_commit() {
 
     git_libgit2_init();
 
     //init repo
-    git_repository *repo = open_repo();
+    git_repository *repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/test_repo");
 //    git_repository *repo = open_bare_repo();
 
     git_oid tree_id, parent_id, commit_id;
@@ -196,7 +228,7 @@ int main() {
     //create blob, tree and commit
         //create blob
     git_oid blob_oid;
-    create_blob(repo, &blob_oid);
+    create_blob(repo, &blob_oid, "# Hello there!");
         //create tree
     git_oid tree_oid;
     create_tree_with_blob(repo, &tree_oid, &blob_oid, tree);
@@ -219,4 +251,49 @@ int main() {
     git_repository_free(repo);
 
     return 0;
+}
+
+
+int main_init_commit() {
+
+    git_libgit2_init();
+
+    //init repo
+    git_repository *repo = open_bare_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo3");
+
+    //create blob, tree and commit
+        //create blob
+    git_oid blob_oid;
+    create_blob(repo, &blob_oid, "init commit. Hello there!");
+        //create tree
+    git_oid tree_oid;
+    create_tree_with_blob(repo, &tree_oid, &blob_oid, NULL);
+        // lookup tree struct
+    git_tree *new_tree;
+    lookup(repo, &tree_oid,
+           NULL,
+           &new_tree,
+           NULL,
+           NULL,
+           2);
+    //create commit
+    git_oid commit_oid;
+    create_init_commit(repo,
+                  &commit_oid,
+                  new_tree);
+
+    std::cout << "init commit completed!" << std::endl;
+    git_repository_free(repo);
+
+    return 0;
+}
+
+int main() {
+    // test append commit
+//    int rst = main_append_commit();
+
+    //test first commit
+    int rst = main_init_commit();
+
+    return rst;
 }
