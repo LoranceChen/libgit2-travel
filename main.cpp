@@ -131,7 +131,8 @@ void lookup_commit_tree(git_commit* commit, git_tree *tree) {
 
 void create_init_commit(git_repository *repo,
                         git_oid *out_new_commit_id,
-                        const git_tree *tree) {
+                        const git_tree *tree,
+                        const char message[]) {
 
     // commit repo
     git_signature *me = NULL;
@@ -145,7 +146,7 @@ void create_init_commit(git_repository *repo,
             me,                          /* author */
             me,                          /* committer */
             "UTF-8",                     /* message encoding */
-            "init commit",  /* message */
+            message,  /* message */
             tree,                        /* root tree */
             0,                           /* parent count */
             NULL);                    /* parents */
@@ -156,7 +157,8 @@ void create_init_commit(git_repository *repo,
 void create_commit(git_repository *repo,
                    git_oid *out_new_commit_id,
                     const git_commit *parent,
-                    const git_tree *tree) {
+                    const git_tree *tree,
+                    const char message[]) {
     // commit repo
     git_signature *me = NULL;
     int error = git_signature_now(&me, "Me", "me@example.com");
@@ -169,7 +171,7 @@ void create_commit(git_repository *repo,
             me,                          /* author */
             me,                          /* committer */
             "UTF-8",                     /* message encoding */
-            "Flooberhaul the whatnots2222",  /* message */
+            message,  /* message */
             tree,                        /* root tree */
             1,                           /* parent count */
             parent);                    /* parents */
@@ -245,7 +247,9 @@ int main_append_commit() {
     create_commit(repo,
             &commit_oid,
             commit,//HEAD commit
-            new_create);
+            new_create,
+            "Flooberhaul the whatnots2222333");
+
 
     std::cout << "Hello, World!" << std::endl;
     git_repository_free(repo);
@@ -280,7 +284,9 @@ int main_init_commit() {
     git_oid commit_oid;
     create_init_commit(repo,
                   &commit_oid,
-                  new_tree);
+                  new_tree,
+                  "init commit!");
+
 
     std::cout << "init commit completed!" << std::endl;
     git_repository_free(repo);
