@@ -13,7 +13,8 @@ git_repository* open_bare_repo() {
     //init repo
     git_repository *repo = NULL;
     //open bare
-    int error = git_repository_open_bare(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
+//    int error = git_repository_open_bare(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
+    int error = git_repository_open_bare(&repo, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo");
 
     error_check(error);
 
@@ -28,11 +29,7 @@ git_repository* open_repo() {
 //    int error = git_repository_open(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
     int error = git_repository_open(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
 
-    if (error < 0) {
-        const git_error *e = giterr_last();
-        printf("Error %d/%d: %s\n", error, e->klass, e->message);
-        exit(error);
-    }
+    error_check(error);
 
     return repo;
 
@@ -93,17 +90,19 @@ void create_blob(git_repository *repo, git_oid *blob_oid) {
     return;
 }
 
-void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git_oid *blob_oid) {
+void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git_oid *blob_oid, const git_tree *source_tree) {
     git_treebuilder *bld = NULL;
-    int error = git_treebuilder_new(&bld, repo, NULL);
+    int error = git_treebuilder_new(&bld, repo, source_tree);
+    error_check(error);
 
 /* Add some entries */
-    git_object *obj = NULL;
+//    git_object *obj = NULL;
 //    error = git_revparse_single(&obj, repo, "HEAD:README.md");
     error = git_treebuilder_insert(NULL, bld,
-                                   "create_by_code.md",        /* filename */
+                                   "create_by_code2.md",        /* filename */
                                    blob_oid, /* OID */
                                    GIT_FILEMODE_BLOB); /* mode */
+    error_check(error);
 //    git_object_free(obj);
 //    error = git_revparse_single(&obj, repo, "v0.1.0:foo/bar/baz.c");
 //    error = git_treebuilder_insert(NULL, bld,
@@ -113,6 +112,7 @@ void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git
 //    git_object_free(obj);
 
     error = git_treebuilder_write(out_tree_id, bld);
+    error_check(error);
 
     git_treebuilder_free(bld);
 }
@@ -152,18 +152,9 @@ int main() {
     git_libgit2_init();
 
     //init repo
-//    git_repository *repo = NULL;
-//    int error = git_repository_init(&repo, "/Users/lorancechen/tmp/gitgud_repo/c-test", true);
-
     git_repository *repo = open_repo();
+//    git_repository *repo = open_bare_repo();
 
-    //open repo
-//    int error = git_repository_open(&repo, "/Users/lorancechen/tmp/gitgud_repo/test_repo");
-//    if (error < 0) {
-//        const git_error *e = giterr_last();
-//        printf("Error %d/%d: %s\n", error, e->klass, e->message);
-//        exit(error);
-//    }
     git_oid tree_id, parent_id, commit_id;
 //    git_oid oid;
 //    oid_test(&oid);
@@ -200,13 +191,15 @@ int main() {
     //create a commit
 //    create_commit(repo, &commit_id, commit, tree);
 
+    //tree op
+
     //create blob, tree and commit
         //create blob
     git_oid blob_oid;
     create_blob(repo, &blob_oid);
         //create tree
     git_oid tree_oid;
-    create_tree_with_blob(repo, &tree_oid, &blob_oid);
+    create_tree_with_blob(repo, &tree_oid, &blob_oid, tree);
         // lookup tree struct
     git_tree *new_create;
     lookup(repo, &tree_oid,
