@@ -16,3 +16,6 @@ test libgit2 library use case mainly for bare repository.
 - merge / fast forward
 - get list history content of a file
 - get differ of two version
+
+## resource
+- [merge with temporary index](https://stackoverflow.com/questions/28246887/create-a-tree-object-from-a-temporary-index-using-libgit2-git2go)
