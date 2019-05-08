@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(libgit_test)
 
-add_executable(libgit_test main.c core.c core.h merge_example.c common.h common.c)
+add_executable(libgit_test main.c wapper.h)
 
 #set(CMAKE_CXX_STANDARD 14)
 set_property(TARGET libgit_test PROPERTY C_STANDARD 90)
