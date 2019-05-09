@@ -94,7 +94,7 @@ void create_blob(git_repository *repo, git_oid *blob_oid, const char str[]) {
     return;
 }
 
-void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git_oid *blob_oid, const git_tree *source_tree) {
+void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git_oid *blob_oid, const git_tree *source_tree, const char file[]) {
     git_treebuilder *bld = NULL;
 
     int error;
@@ -109,7 +109,7 @@ void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git
 //    git_object *obj = NULL;
 //    error = git_revparse_single(&obj, repo, "HEAD:README.md");
     error = git_treebuilder_insert(NULL, bld,
-                                   "create_by_code2.md",        /* filename */
+                                   file,        /* filename */
                                    blob_oid, /* OID */
                                    GIT_FILEMODE_BLOB); /* mode */
     error_check(error);
@@ -209,6 +209,10 @@ void create_merge_commit(git_repository *repo,
     error_check(error);
 
     return;
+}
+
+void create_commit_with_amend() {
+
 }
 
 #endif //LIBGIT_TEST_WAPPER_H
