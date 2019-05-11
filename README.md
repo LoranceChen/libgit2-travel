@@ -5,7 +5,9 @@ test libgit2 library use case mainly for bare repository.
 - create first commit
 - create a commit to exist HEAD commit
 - merge (non-fast forward) two commits in non-conflict situation
-- commit amend only commit message & amend commit message and tree
+- commit amend only commit message
+- amend commit message and tree
+- create a file in a directory path
 - ...
 
 ## Todo
@@ -14,9 +16,16 @@ test libgit2 library use case mainly for bare repository.
 - create a commit in a branch, such as branch-tmp
     - create a new commit
     - verify branch-tmp ref to the new commit
-- merge / fast forward
+- merge with fast forward
 - get list history content of a file
-- get differ of two version
+    - get commit id of the file (git shell)
+        - `git --no-pager log --pretty=format:"%h" ./file3.txt`
+    - get file content of a commit id
+- get differ of file's two version
+- show and solve conflict
+- concurrency safe: insure index( such as HEAD) NO concurrent problem.
+    - git http push to master(HEAD) and web save to master(HEAD)
+    - multiple web client save HEAD
 
 ## resource
 - [merge with temporary index](https://stackoverflow.com/questions/28246887/create-a-tree-object-from-a-temporary-index-using-libgit2-git2go)

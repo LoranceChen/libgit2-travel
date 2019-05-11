@@ -96,7 +96,6 @@ void create_blob(git_repository *repo, git_oid *blob_oid, const char str[]) {
 
 void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git_oid *blob_oid, const git_tree *source_tree, const char file[]) {
     git_treebuilder *bld = NULL;
-
     int error;
     if(source_tree != NULL) {
         error = git_treebuilder_new(&bld, repo, source_tree);
@@ -125,6 +124,27 @@ void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git
     error_check(error);
 
     git_treebuilder_free(bld);
+}
+
+
+void create_tree_with_custom_index(git_repository *repo, git_index *index, git_oid *out_tree_id) {
+    git_index_entry entry = {{0}};
+    entry.mode = GIT_FILEMODE_BLOB;
+    entry.path = "a/b/c/d/file.txt";
+    char *content = "123 content2222.";
+    int error = git_index_add_frombuffer(
+            index,
+            &entry,
+            content,
+            strlen(content)
+    );
+    error_check(error);
+
+    git_index_write(index);
+    error_check(error);
+
+    git_index_write_tree(out_tree_id, index);
+    error_check(error);
 }
 
 void lookup_commit_tree(git_commit* commit, git_tree *tree) {

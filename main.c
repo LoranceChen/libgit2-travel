@@ -67,7 +67,11 @@ int main_append_commit(bool isBare, const char path[], const char content[]) {
            2);
         //create commit
     git_oid commit_oid;
-
+    create_commit(repo,
+                  &commit_oid,
+                  commit,//HEAD commit
+                  new_create,
+                  "Flooberhaul the whatnots2222333");
 
 //    std::cout << "Hello, World!" << std::endl;
     printf("hello, world\n");
@@ -328,12 +332,12 @@ void main_commit_amend() {
     repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/amend-commit-repo");
 
     const char content[] = "new file content222";
-    const char commit_msg[] = "amend commit message with new file32344";
+    const char commit_msg[] = "amend commit message with new file3234455556000";
 
     //former commit id
     git_oid now_commit_oid, new_commit_oid, new_tree_oid, new_blob_oid;
     git_commit *now_commit;
-    oid_from_str(&now_commit_oid, "c0fc00365fd652176a461a0e3aba1584f3497c54");
+    oid_from_str(&now_commit_oid, "178d11cc4bd7ab00e2287e9a74edd1fedabc2897");
     lookup(repo, &now_commit_oid, &now_commit, NULL, NULL, NULL, 1);
 
     //get now tree
@@ -363,7 +367,7 @@ void main_commit_amend() {
 
 
     //create amend commit
-    git_commit_amend(&new_commit_oid,
+    int error = git_commit_amend(&new_commit_oid,
                      now_commit,
                      "HEAD",
                      NULL,
@@ -372,14 +376,7 @@ void main_commit_amend() {
                      commit_msg,
                      new_create_tree
     );
-
-    //create commit
-//    git_oid new_commit;
-//    create_commit(repo,
-//                  &new_commit,
-//                  now_commit,//HEAD commit
-//                  new_create_tree,
-//                  "Flooberhaul the whatnots2222333333333444");
+    error_check(error);
 
 }
 
@@ -393,6 +390,45 @@ void main_merge_repo_with_conflict() {}
 void main_merge_bare_repo_with_conflict() {}
 
 void main_create_pathed_file_tree() {}
+
+void main_create_commit_with_path_byindex() {
+    git_libgit2_init();
+
+    //init repo
+    git_repository *repo;
+    repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/simple-repo");
+
+    git_oid tree_id;
+    git_index *idx;
+    git_repository_index(&idx, repo);
+
+    create_tree_with_custom_index(repo, idx, &tree_id);
+    git_tree *tree;
+
+    // lookup tree
+    lookup(repo, &tree_id,
+           NULL,
+           &tree,
+           NULL,
+           NULL,
+           2);
+
+    //lookup commit
+    git_oid head_id;
+    git_commit *commit;
+    head_oid(&head_id, repo);
+
+    lookup(repo, &head_id,
+           &commit,
+           NULL,
+           NULL,
+           NULL,
+           1);
+
+    git_oid new_commit_id;
+    create_commit(repo, &new_commit_id, commit, tree, "hello create a/b/c/... file from index");
+
+}
 
 int main() {
     // test append commit
@@ -411,8 +447,9 @@ int main() {
 
 //    main_commit_amend_only_commit_msg();
 
-    main_commit_amend();
-
+//    main_commit_amend();
+//    main_commit_with_path();
+    main_create_commit_with_path_byindex();
     //test first commit
 //    int rst = main_init_commit(true, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo3");
 //    int rst = main_init_commit(false, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/simple-repo");
