@@ -381,6 +381,60 @@ void main_commit_amend() {
 }
 
 void main_commit_amend_bare_repo() {
+    git_libgit2_init();
+
+    //init repo
+    git_repository *repo;
+    repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/amend-commit-repo-bare");
+
+    const char content[] = "new file content222 bare repo";
+    const char commit_msg[] = "amend commit message with new file3234ssss455556000";
+
+    //former commit id
+    git_oid now_commit_oid, new_commit_oid, new_tree_oid, new_blob_oid;
+    git_commit *now_commit;
+//    oid_from_str(&now_commit_oid, "4a2d991f4069a3cbb2e32b77633bedfe55c5a180");
+    head_oid(&now_commit_oid, repo);
+
+    lookup(repo, &now_commit_oid, &now_commit, NULL, NULL, NULL, 1);
+
+    //get now tree
+    git_tree *now_tree;
+    git_commit_tree(&now_tree, now_commit);
+
+
+    //create new blob
+    create_blob(repo, &new_blob_oid, content);
+
+    //create new tree from new blob_oid
+    create_tree_with_blob(
+            repo,
+            &new_tree_oid,
+            &new_blob_oid,
+            now_tree,
+            "file3.txt"
+    );
+
+    git_tree *new_create_tree;
+    lookup(repo, &new_tree_oid,
+           NULL,
+           &new_create_tree,
+           NULL,
+           NULL,
+           2);
+
+
+    //create amend commit
+    int error = git_commit_amend(&new_commit_oid,
+                                 now_commit,
+                                 "HEAD",
+                                 NULL,
+                                 NULL,
+                                 NULL,
+                                 commit_msg,
+                                 new_create_tree
+    );
+    error_check(error);
 
 }
 
@@ -399,10 +453,8 @@ void main_create_commit_with_path_byindex() {
     repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/simple-repo");
 
     git_oid tree_id;
-    git_index *idx;
-    git_repository_index(&idx, repo);
 
-    create_tree_with_custom_index(repo, idx, &tree_id);
+    create_tree_content_with_index(repo, &tree_id, "ab/cd/file.txt", "abcd file.txt");
     git_tree *tree;
 
     // lookup tree
@@ -426,7 +478,7 @@ void main_create_commit_with_path_byindex() {
            1);
 
     git_oid new_commit_id;
-    create_commit(repo, &new_commit_id, commit, tree, "hello create a/b/c/... file from index");
+    create_commit(repo, &new_commit_id, commit, tree, "hello create ab/cd file from index");
 
 }
 
@@ -448,8 +500,12 @@ int main() {
 //    main_commit_amend_only_commit_msg();
 
 //    main_commit_amend();
+    main_commit_amend_bare_repo();
+
 //    main_commit_with_path();
-    main_create_commit_with_path_byindex();
+//    main_create_commit_with_path_byindex();
+
+
     //test first commit
 //    int rst = main_init_commit(true, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo3");
 //    int rst = main_init_commit(false, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/simple-repo");

@@ -127,23 +127,25 @@ void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git
 }
 
 
-void create_tree_with_custom_index(git_repository *repo, git_index *index, git_oid *out_tree_id) {
+void create_tree_content_with_index(git_repository *repo, git_oid *out_tree_id, const char path[], const char *content) {
+    git_index *idx;
+    git_repository_index(&idx, repo);
     git_index_entry entry = {{0}};
     entry.mode = GIT_FILEMODE_BLOB;
-    entry.path = "a/b/c/d/file.txt";
-    char *content = "123 content2222.";
+    entry.path = path;//"a/b/c/d/file.txt";
+//    char *content = "123 content2222.";
     int error = git_index_add_frombuffer(
-            index,
+            idx,
             &entry,
             content,
             strlen(content)
     );
     error_check(error);
 
-    git_index_write(index);
-    error_check(error);
+//    git_index_write(index);
+//    error_check(error);
 
-    git_index_write_tree(out_tree_id, index);
+    git_index_write_tree(out_tree_id, idx);
     error_check(error);
 }
 
