@@ -438,7 +438,85 @@ void main_commit_amend_bare_repo() {
 
 }
 
-void main_merge_file_conflict_message() {}
+void main_merge_and_solve_conflict() {
+    git_libgit2_init();
+
+    //init repo
+    git_repository *repo;
+    repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/conflict-repo");
+    git_index *idx;
+//    git_repository_index(&idx, repo);
+
+    //create commit
+    // find commit1
+    git_oid commit1_oid, commit2_oid;
+    git_commit *git_commit1, *git_commit2;
+    oid_from_str(&commit1_oid, "c7a3c215977f518c296f1fd263e5a3d92654c24c");
+    lookup(repo, &commit1_oid,
+           &git_commit1,
+           NULL,
+           NULL,
+           NULL,
+           1);
+    oid_from_str(&commit2_oid, "1b2493f5ae8e68d7dfd0f307885f2875cfa49c96");
+    lookup(repo, &commit2_oid,
+           &git_commit2,
+           NULL,
+           NULL,
+           NULL,
+           1);
+
+    git_index *index;
+    int error = git_merge_commits(&index, repo, git_commit1, git_commit2, NULL);
+    int conflict_count = git_index_has_conflicts(index);
+
+    git_oid index_tree_oid, index_commit_oid;
+    git_tree *index_tree;
+    if(conflict_count == 0) {
+        git_index_write_tree_to(&index_tree_oid, index, repo);
+        lookup(repo,&index_tree_oid,
+               NULL,
+               &index_tree,
+               NULL,
+               NULL,
+               2);
+        create_merge_commit(repo,
+                            &index_commit_oid,
+                            git_commit1, git_commit2,
+                            index_tree, "merge without conflict~");
+//        git_index_write(index);
+    } else {
+        // solve conflict
+        /* If you know the path of a conflicted file */
+        git_repository_index(&idx, repo);
+
+
+        const git_index_entry *ancestor = NULL,
+                *ours = NULL,
+                *theirs = NULL;
+        error = git_index_conflict_get(
+                &ancestor,
+                &ours,
+                &theirs,
+                index,
+                "file");
+        error_check(error);
+
+        git_blob *ancestor_blob;
+        error = git_blob_lookup(&ancestor_blob, repo, &ancestor->id);
+        error_check(error);
+
+        char *content = (char *)git_blob_rawcontent(ancestor_blob);
+        size_t size = git_blob_rawsize(ancestor_blob);
+
+        printf("content - %s", content);
+        printf("some conflict occurred!");
+    }
+
+    error_check(error);
+
+}
+
 void main_merge_repo_with_conflict() {}
 
 void main_merge_bare_repo_with_conflict() {}
@@ -500,11 +578,11 @@ int main() {
 //    main_commit_amend_only_commit_msg();
 
 //    main_commit_amend();
-    main_commit_amend_bare_repo();
+//    main_commit_amend_bare_repo();
 
 //    main_commit_with_path();
 //    main_create_commit_with_path_byindex();
-
+    main_merge_and_solve_conflict();
 
     //test first commit
 //    int rst = main_init_commit(true, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo3");

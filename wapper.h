@@ -233,8 +233,5 @@ void create_merge_commit(git_repository *repo,
     return;
 }
 
-void create_commit_with_amend() {
-
-}
 
 #endif //LIBGIT_TEST_WAPPER_H

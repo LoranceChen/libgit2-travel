@@ -21,11 +21,13 @@ test libgit2 library use case mainly for bare repository.
     - get commit id of the file (git shell)
         - `git --no-pager log --pretty=format:"%h" ./file3.txt`
     - get file content of a commit id
+        - `git --no-pager show 4a2d991:file3.txt --pretty=format:"%h" --no-patch`
 - get differ of file's two version
 - show and solve conflict
 - concurrency safe: insure index( such as HEAD) NO concurrent problem.
     - git http push to master(HEAD) and web save to master(HEAD)
     - multiple web client save HEAD
+    - see `transaction.h`
 
 ## resource
 - [merge with temporary index](https://stackoverflow.com/questions/28246887/create-a-tree-object-from-a-temporary-index-using-libgit2-git2go)
