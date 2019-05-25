@@ -438,7 +438,7 @@ void main_commit_amend_bare_repo() {
 
 }
 
-void main_merge_and_solve_conflict() {
+void main_merge_and_output_conflict() {
     git_libgit2_init();
 
     //init repo
@@ -502,14 +502,23 @@ void main_merge_and_solve_conflict() {
                 "file");
         error_check(error);
 
-        git_blob *ancestor_blob;
+        git_blob *ancestor_blob, *ours_blob, *theirs_blob;
         error = git_blob_lookup(&ancestor_blob, repo, &ancestor->id);
         error_check(error);
 
+        error = git_blob_lookup(&ours_blob, repo, &ours->id);
+        error_check(error);
+
+        error = git_blob_lookup(&theirs_blob, repo, &theirs->id);
+        error_check(error);
         char *content = (char *)git_blob_rawcontent(ancestor_blob);
+        char *content_ours = (char *)git_blob_rawcontent(ours_blob);
+        char *content_theirs = (char *)git_blob_rawcontent(theirs_blob);
         size_t size = git_blob_rawsize(ancestor_blob);
 
-        printf("content - %s", content);
+        printf("content:\n%s", content);
+        printf("\ncontent_ours:\n%s", content_ours);
+        printf("\ncontent_theirs:\n%s", content_theirs);
         printf("some conflict occurred!");
     }
 
@@ -582,7 +591,7 @@ int main() {
 
 //    main_commit_with_path();
 //    main_create_commit_with_path_byindex();
-    main_merge_and_solve_conflict();
+    main_merge_and_output_conflict();
 
     //test first commit
 //    int rst = main_init_commit(true, "/Users/lorancechen/tmp/gitgud_repo/libgit2-test/bare-repo3");
