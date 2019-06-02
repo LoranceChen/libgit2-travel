@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+
+#define GIT_UNUSED(x) ((void)(x))
+
 void error_check(int error) {
     if (error < 0) {
         const git_error *e = giterr_last();
@@ -126,8 +129,28 @@ void create_tree_with_blob(git_repository *repo, git_oid *out_tree_id, const git
     git_treebuilder_free(bld);
 }
 
+void create_tree_content_with_index(git_index *index, git_oid *out_tree_id, const char *path,
+                                        const char *content) {
+    git_index_entry entry = {{0}};
+    entry.mode = GIT_FILEMODE_BLOB;
+    entry.path = path;//"a/b/c/d/file.txt";
+//    char *content = "123 content2222.";
+    int error = git_index_add_frombuffer(
+            index,
+            &entry,
+            content,
+            strlen(content)
+    );
+    error_check(error);
 
-void create_tree_content_with_index(git_repository *repo, git_oid *out_tree_id, const char path[], const char *content) {
+//    git_index_write(index);
+//    error_check(error);
+
+    git_index_write_tree(out_tree_id, index);
+    error_check(error);
+}
+void create_tree_content_with_cur_index(git_repository *repo, git_oid *out_tree_id, const char *path,
+                                        const char *content) {
     git_index *idx;
     git_repository_index(&idx, repo);
     git_index_entry entry = {{0}};
@@ -232,6 +255,40 @@ void create_merge_commit(git_repository *repo,
 
     return;
 }
+struct git_tree_entry {
+    uint16_t attr;
+    uint16_t filename_len;
+    const git_oid *oid;
+    const char *filename;
+};
 
+typedef struct {
+    git_repository *repo;
+    int *count;
+} cb_payload;
+
+/**
+ * return -1 exit iterator
+ */
+int walk_tree_cb(const char *root, const git_tree_entry *entry, void *payload) {
+    cb_payload *cbPayload = payload;
+
+    GIT_UNUSED(root);
+    GIT_UNUSED(entry);
+    printf("current filename - %s\n", entry->filename);
+    char *oid_str = git_oid_tostr_s(entry->oid);
+    printf("current filename oid - %s\n", oid_str);
+
+    (cbPayload->count) += 1;
+    git_blob *blob;
+    lookup(cbPayload->repo, entry->oid, NULL, NULL, &blob, NULL, 3);
+    char *content = (char *)git_blob_rawcontent(blob);
+    printf("current filename content - %s\n", content);
+
+
+//  printf("count - %d\n", *count);
+
+    return 0;
+}
 
 #endif //LIBGIT_TEST_WAPPER_H

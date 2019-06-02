@@ -8,6 +8,7 @@ test libgit2 library use case mainly for bare repository.
 - commit amend only commit message
 - amend commit message and tree
 - create a file in a directory path
+- solve conflict with cleanup and amend file
 - ...
 
 ## Todo
@@ -22,13 +23,21 @@ test libgit2 library use case mainly for bare repository.
         - `git --no-pager log --pretty=format:"%h" ./file3.txt`
     - get file content of a commit id
         - `git --no-pager show 4a2d991:file3.txt --pretty=format:"%h" --no-patch`
-- get differ of file's two version
+- get differ of file's two version [x]
 - show and solve conflict
+    - show diff in buffer
+    - solve conflict [x]
 - concurrency safe: insure index( such as HEAD) NO concurrent problem.
     - git http push to master(HEAD) and web save to master(HEAD)
     - multiple web client save HEAD
     - see `transaction.h`
+## TODO
+- 冲突合并buf
+- 冲突后生成merge
+- rebase
+- concurrent
 
 ## resource
 - [merge with temporary index](https://stackoverflow.com/questions/28246887/create-a-tree-object-from-a-temporary-index-using-libgit2-git2go)
 - [refs and branch](https://ben.straub.cc/2013/06/03/refs-tags-and-branching/)
+- [git_diff blog](http://ftxtool.org/2016/04/03/127/)
