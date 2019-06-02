@@ -1,14 +1,15 @@
 # libgit2 travel
 test libgit2 library use case mainly for bare repository.
 
-## Features
+## Features tested
 - create first commit
 - create a commit to exist HEAD commit
 - merge (non-fast forward) two commits in non-conflict situation
 - commit amend only commit message
 - amend commit message and tree
 - create a file in a directory path
-- solve conflict with cleanup and amend file
+- show commit diffs
+- solve conflict with cleanup and amend the conflict file
 - ...
 
 ## Todo
@@ -18,13 +19,13 @@ test libgit2 library use case mainly for bare repository.
     - create a new commit
     - verify branch-tmp ref to the new commit
 - merge with fast forward
-- get list history content of a file
+- get list history content of a file [x]
     - get commit id of the file (git shell)
         - `git --no-pager log --pretty=format:"%h" ./file3.txt`
     - get file content of a commit id
         - `git --no-pager show 4a2d991:file3.txt --pretty=format:"%h" --no-patch`
 - get differ of file's two version [x]
-- show and solve conflict
+- show and solve conflict [-]
     - show diff in buffer
     - solve conflict [x]
 - concurrency safe: insure index( such as HEAD) NO concurrent problem.
