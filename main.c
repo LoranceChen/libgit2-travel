@@ -577,11 +577,16 @@ void main_create_commit_with_path_byindex() {
  */
 void main_merge_and_solve_conflict_bare() {
     git_libgit2_init();
-
+    int error = 0;
     //init repo
     git_repository *repo;
     repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/conflict-repo-bare");
     git_index *idx;
+
+    git_transaction *gitTransaction;
+    git_transaction_new(&gitTransaction, repo);
+    error = git_transaction_lock_ref(gitTransaction, "HEAD");
+    error_check(error);
 //    git_repository_index(&idx, repo);
 
     //create commit
@@ -604,7 +609,7 @@ void main_merge_and_solve_conflict_bare() {
            1);
 
     git_index *index;
-    int error = git_merge_commits(&index, repo, git_commit1, git_commit2, NULL);
+    error = git_merge_commits(&index, repo, git_commit1, git_commit2, NULL);
 
 
 
@@ -998,7 +1003,238 @@ void main_walk_index() {
 }
 
 void main_conflict_merge_buff() {
+    git_libgit2_init();
 
+    //init repo
+    git_repository *repo;
+    repo = open_repo("/Users/lorancechen/tmp/gitgud_repo/libgit2-test/conflict-repo-bare");
+
+    //add lock
+    git_transaction *gitTransaction;
+    git_transaction_new(&gitTransaction, repo);
+    git_transaction_lock_ref(gitTransaction, "refs/heads/b3");
+
+    git_index *idx;
+//    git_repository_index(&idx, repo);
+
+    //create commit
+    // find commit1
+    git_oid commit1_oid, commit2_oid;
+    git_commit *git_commit1, *git_commit2;
+    oid_from_str(&commit1_oid, "9adda8410368a6d2e02f4571d9ae2685599fb8ec");
+    lookup(repo, &commit1_oid,
+           &git_commit1,
+           NULL,
+           NULL,
+           NULL,
+           1);
+    oid_from_str(&commit2_oid, "5ef4aaf4855e6c716b439435ec00cc667b4c65bf");
+    lookup(repo, &commit2_oid,
+           &git_commit2,
+           NULL,
+           NULL,
+           NULL,
+           1);
+
+    git_index *index;
+    int error = git_merge_commits(&index, repo, git_commit1, git_commit2, NULL);
+    error_check(error);
+
+    int conflict_count = git_index_has_conflicts(index);
+
+    git_oid index_tree_oid, index_commit_oid;
+    git_tree *index_tree;
+    if (conflict_count == 0) {
+        git_index_write_tree_to(&index_tree_oid, index, repo);
+        lookup(repo, &index_tree_oid,
+               NULL,
+               &index_tree,
+               NULL,
+               NULL,
+               2);
+        create_merge_commit(repo,
+                            &index_commit_oid,
+                            git_commit1, git_commit2,
+                            index_tree, "merge without conflict~");
+//        git_index_write(index);
+    } else {
+        // solve conflict
+        /* If you know the path of a conflicted file */
+//        git_repository_index(&idx, repo);
+
+
+//        try merge b3:NOTICE `git_merge` not work in bare repo
+//        const git_reference *ref;
+//        const git_annotated_commit *anno_commit;
+//        git_reference_lookup(&ref, repo, "refs/heads/b3");
+//        git_annotated_commit_from_ref(&anno_commit, repo, ref);
+//        error = git_merge(repo, &anno_commit,1 , NULL, NULL);
+//        error_check(error);
+
+
+
+
+
+
+
+
+
+
+//        todo get conflict merged buffer  walk with conflict
+//        git_index_conflict_iterator *conflicts;
+//        const git_index_entry *ancestor1;
+//        const git_index_entry *our1;
+//        const git_index_entry *their1;
+//        int err = 0;
+//        git_index_conflict_iterator_new(&conflicts, index);
+
+//        while ((err = git_index_conflict_next(&ancestor1, &our1, &their1, conflicts)) == 0) {
+//            error = git_index_conflict_add(index, ancestor1, our1, their1);
+//            git_index_add(index, our1);
+//            error_check(error);
+//            int conflict_count2 = git_index_has_conflicts(index);
+//            // add ia entry to index
+////            git_index_entry idx_entry;
+////            idx_entry.path = "file3";
+////            idx_entry.mode = GIT_FILEMODE_BLOB;
+////            error = git_index_add_frombuffer(index, &idx_entry, "Hi.\n", 4);
+////            error_check(error);
+//
+////            git_index_conflict_remove(index, "file2");
+////            int conflict_count3 = git_index_has_conflicts(index);
+//
+//            error = git_index_conflict_get(
+//                    &ancestor1,
+//                    &our1,
+//                    &their1,
+//                    index,
+//                    "file2");
+//
+//            error_check(error);
+//
+//            fprintf(stderr, "conflict: a:%s o:%s t:%s\n",
+//                    ancestor1 ? ancestor1->path : "NULL",
+//                    our1->path ? our1->path : "NULL",
+//                    their1->path ? their1->path : "NULL");
+//        }
+
+
+
+
+
+
+
+        //test: show conflict file content
+        const git_index_entry *ancestor = NULL,
+                *ours = NULL,
+                *theirs = NULL;
+        error = git_index_conflict_get(
+                &ancestor,
+                &ours,
+                &theirs,
+                index,
+                "file2");
+        error_check(error);
+
+        git_blob *ancestor_blob, *ours_blob, *theirs_blob;
+        error = git_blob_lookup(&ancestor_blob, repo, &ancestor->id);
+        error_check(error);
+
+        error = git_blob_lookup(&ours_blob, repo, &ours->id);
+        error_check(error);
+
+        error = git_blob_lookup(&theirs_blob, repo, &theirs->id);
+        error_check(error);
+        char *content = (char *)git_blob_rawcontent(ancestor_blob);
+        char *content_ours = (char *)git_blob_rawcontent(ours_blob);
+        char *content_theirs = (char *)git_blob_rawcontent(theirs_blob);
+        size_t size = git_blob_rawsize(ancestor_blob);
+
+        printf("content:\n%s", content);
+        printf("\ncontent_ours:\n%s", content_ours);
+        printf("\ncontent_theirs:\n%s", content_theirs);
+        printf("some conflict occurred!");
+
+        // show patch buf
+        git_patch *patch;
+        error = git_patch_from_blobs(
+                &patch,
+                theirs_blob,
+                NULL,
+                ours_blob,
+                NULL,
+                NULL
+                );
+        error_check(error);
+
+        git_buf gitBuf;
+        error = git_patch_to_buf(&gitBuf, patch);
+        error_check(error);
+
+        printf("\nshow conflict:\n%s", gitBuf.ptr);
+
+
+        // show delta info
+        const git_diff_delta *delta;
+        delta = git_patch_get_delta(patch);
+        git_oid new_file_oid = delta->new_file.id;
+        git_blob *new_file_blob;
+        lookup(repo, &new_file_oid, NULL, NULL, &new_file_blob, NULL, 3);
+        char *new_file_content = (char *)git_blob_rawcontent(new_file_blob);
+        printf("\nshow conflict: new file:\n%s", new_file_content);
+
+        git_oid old_file_oid = delta->old_file.id;
+        git_blob *old_file_blob;
+        lookup(repo, &old_file_oid, NULL, NULL, &old_file_blob, NULL, 3);
+        char *old_file_content = (char *)git_blob_rawcontent(old_file_blob);
+        printf("\nshow conflict: old file:\n%s", old_file_content);
+
+        const git_diff_hunk *hunk;
+        size_t  hunk_line;
+        error = git_patch_get_hunk(
+                &hunk,
+                &hunk_line,
+                patch,
+                1
+                );
+        error_check(error);
+
+        printf("show hunk: new_start: %d\n", hunk->new_start);
+        printf("show hunk: new_lines: %d\n", hunk->new_lines);
+        printf("show hunk: old_start: %d\n", hunk->old_start);
+        printf("show hunk: old_lines: %d\n", hunk->old_lines);
+        printf("show hunk: header: %s\n", hunk->header);
+        printf("show hunk: header_len: %d\n", (int)hunk->header_len);
+
+        printf("================ \n\n\n\n");
+
+        int ct = 0;
+        error = git_diff_blobs(
+                ours_blob,
+                NULL,
+                theirs_blob,
+                NULL,
+                NULL,
+
+                NULL,
+                NULL,
+                NULL,
+                diff_line_cb,
+                &ct
+                );
+
+        error_check(error);
+    }
+
+//    git_transaction_remove(gitTransaction, "HEAD");
+
+    //remove HEAD.lock, refs/heads/b3.lock file.
+    git_transaction_free(gitTransaction);
+
+}
+
+void main_rebase() {
+//    git_rebase_commit();
 }
 
 int main() {

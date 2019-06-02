@@ -28,15 +28,16 @@ test libgit2 library use case mainly for bare repository.
 - show and solve conflict [-]
     - show diff in buffer
     - solve conflict [x]
-- concurrency safe: insure index( such as HEAD) NO concurrent problem.
+- concurrency safe: insure index( such as HEAD) NO concurrent problem. [x]
     - git http push to master(HEAD) and web save to master(HEAD)
     - multiple web client save HEAD
     - see `transaction.h`
 ## TODO
-- 冲突合并buf
-- 冲突后生成merge
+- 冲突合并buf [x]
+    - parse `git_patch_to_buf`
+- 冲突后生成merge [x]
 - rebase
-- concurrent
+- concurrent [x]
 
 ## resource
 - [merge with temporary index](https://stackoverflow.com/questions/28246887/create-a-tree-object-from-a-temporary-index-using-libgit2-git2go)

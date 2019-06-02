@@ -268,7 +268,7 @@ typedef struct {
 } cb_payload;
 
 /**
- * return -1 exit iterator
+ * return -1 to exit iterator
  */
 int walk_tree_cb(const char *root, const git_tree_entry *entry, void *payload) {
     cb_payload *cbPayload = payload;
@@ -287,6 +287,28 @@ int walk_tree_cb(const char *root, const git_tree_entry *entry, void *payload) {
 
 
 //  printf("count - %d\n", *count);
+
+    return 0;
+}
+
+/**
+ * return -1 exit iterator
+ */
+int diff_line_cb( const git_diff_delta *delta, /**< delta that contains this data */
+                        const git_diff_hunk *hunk,   /**< hunk containing this data */
+                        const git_diff_line *line,   /**< line data */
+                        void *payload) {
+    printf("delta->new_file.path: %s\n", delta->new_file.path);
+    printf("delta->old_file.path: %s\n", delta->old_file.path);
+
+
+
+    printf("line->new_lines: %d\n", line->num_lines);
+    printf("line->new_lineno: %d\n", line->new_lineno);
+    printf("line->old_lineno: %d\n", line->old_lineno);
+    printf("line->origin: %d\n", line->origin);
+
+    printf("line->content: %s\n", line->content);
 
     return 0;
 }
